@@ -6,11 +6,10 @@ import com.example.tacoclient.model.TacoOrder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,9 +18,22 @@ import static com.example.tacoclient.model.Ingredient.*;
 
 @Slf4j
 @Controller
-@RequestMapping("/order")
+@RequestMapping("/create")
 @SessionAttributes("tacoOrder")
-public class OrderTacoController {
+public class CreateTacoController {
+
+    @PostMapping
+    public String processTaco(@Valid Taco taco,  Errors errors,
+                              @ModelAttribute TacoOrder tacoOrder) {
+        if (errors.hasErrors()) {
+            return "createTaco";
+        }
+
+        tacoOrder.addTaco(taco);
+        log.info("Processing taco: {}", taco);
+        return "redirect:/orders/current";
+    }
+
     @ModelAttribute
     public void addIngredientsToModel(Model model) {
         List<Ingredient> ingredients = Arrays.asList(
@@ -55,7 +67,7 @@ public class OrderTacoController {
 
     @GetMapping
     public String showDesignForm() {
-        return "order";
+        return "createTaco";
     }
 
     private Iterable<Ingredient> filterByType(
